@@ -52,9 +52,5 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-
 ## License
 [DockerMe.ir](https://dockerme.ir)
-
-## Reference
-[docker](https://docs.docker.com/registry/recipes/nginx/)

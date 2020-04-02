@@ -1,4 +1,4 @@
-# DockerMe.ir <ahmad@monlog.ir>
+# DockerMe.ir <ahmad@dockerme.ir>
 version: '3.4'
 services:
   traefik:
@@ -33,7 +33,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=http_network"
       - "traefik.http.routers.pro.entrypoints=http"
-      - "traefik.http.routers.pro.rule=Host(`prometheus.monlog.ir`)"
+      - "traefik.http.routers.pro.rule=Host(`prometheus.DOMAIN`)"
       - "traefik.http.services.pro.loadbalancer.server.port=9090"
     networks:
      - http_network
@@ -50,7 +50,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=http_network"
       - "traefik.http.routers.gra.entrypoints=http"
-      - "traefik.http.routers.gra.rule=Host(`grafana.monlog.ir`)"
+      - "traefik.http.routers.gra.rule=Host(`grafana.DOMAIN`)"
       - "traefik.http.services.gra.loadbalancer.server.port=3000"
     networks:
      - http_network
@@ -68,7 +68,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=http_network"
       - "traefik.http.routers.ale.entrypoints=http"
-      - "traefik.http.routers.ale.rule=Host(`alert.monlog.ir`)"
+      - "traefik.http.routers.ale.rule=Host(`alert.DOMAIN`)"
       - "traefik.http.services.ale.loadbalancer.server.port=9093"
     networks:
      - http_network
@@ -85,7 +85,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=http_network"
       - "traefik.http.routers.lok.entrypoints=http"
-      - "traefik.http.routers.lok.rule=Host(`loki.monlog.ir`)"
+      - "traefik.http.routers.lok.rule=Host(`loki.DOMAIN`)"
       - "traefik.http.services.lok.loadbalancer.server.port=3100"
     networks:
      - http_network
@@ -123,7 +123,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=http_network"
       - "traefik.http.routers.scop.entrypoints=http"
-      - "traefik.http.routers.scop.rule=Host(`scope.monlog.ir`)"
+      - "traefik.http.routers.scop.rule=Host(`scope.DOMAIN`)"
       - "traefik.http.services.scop.loadbalancer.server.port=4040"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:rw"
@@ -144,4 +144,4 @@ volumes:
     name: prometheus
   loki:
     name: loki
-# DockerMe.ir <ahmad@monlog.ir>
+# DockerMe.ir <ahmad@dockerme.ir>
