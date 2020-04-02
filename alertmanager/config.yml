@@ -1,0 +1,25 @@
+# alertmanager configuration
+alertmanager:
+  # global route configuration
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 24h
+      receiver: 'default'
+      routes:
+      - match:
+          alertname: Watchdog
+        receiver: 'null'
+    receivers:
+      - name: 'null'
+      - name: 'default'
+        email_configs:
+          - send_resolved: true
+            from: "info@example.com"
+            to: "comma@separated.emails"
+            smarthost: "mta:25"
+            require_tls: false

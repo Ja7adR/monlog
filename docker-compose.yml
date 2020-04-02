@@ -1,0 +1,147 @@
+# DockerMe.ir <ahmad@DOMAIN>
+version: '3.4'
+services:
+  traefik:
+    image: traefik:latest
+    command:
+      - "--api=true"
+      - "--api.insecure=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=http_network"
+      - "--entrypoints.http.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - http_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=http_network"
+      - "traefik.http.routers.pro.entrypoints=http"
+      - "traefik.http.routers.pro.rule=Host(`prometheus.DOMAIN`)"
+      - "traefik.http.services.pro.loadbalancer.server.port=9090"
+    networks:
+     - http_network
+     - services_network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=http_network"
+      - "traefik.http.routers.gra.entrypoints=http"
+      - "traefik.http.routers.gra.rule=Host(`grafana.DOMAIN`)"
+      - "traefik.http.services.gra.loadbalancer.server.port=3000"
+    networks:
+     - http_network
+     - services_network
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=http_network"
+      - "traefik.http.routers.ale.entrypoints=http"
+      - "traefik.http.routers.ale.rule=Host(`alert.DOMAIN`)"
+      - "traefik.http.services.ale.loadbalancer.server.port=9093"
+    networks:
+     - http_network
+     - services_network
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes: 
+      - loki:/tmp/loki
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=http_network"
+      - "traefik.http.routers.lok.entrypoints=http"
+      - "traefik.http.routers.lok.rule=Host(`loki.DOMAIN`)"
+      - "traefik.http.services.lok.loadbalancer.server.port=3100"
+    networks:
+     - http_network
+     - services_network
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log
+      - ./promtail/docker-config.yaml:/etc/promtail/docker-config.yaml
+    command: -config.file=/etc/promtail/docker-config.yaml
+    networks:
+     - services_network
+
+  cadvisor:
+    image: google/cadvisor
+    container_name: cadvisor
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+     - services_network
+
+  scope:
+    image: weaveworks/scope:1.11.6
+    pid: "host"
+    privileged: true
+    container_name: scope
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=http_network"
+      - "traefik.http.routers.scop.entrypoints=http"
+      - "traefik.http.routers.scop.rule=Host(`scope.DOMAIN`)"
+      - "traefik.http.services.scop.loadbalancer.server.port=4040"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+    command:
+      - "--probe.docker=true"
+    networks:
+     - http_network
+     - services_network
+
+networks:
+  http_network:
+  services_network:
+
+volumes:
+  grafana:
+    name: grafana
+  prometheus:
+    name: prometheus
+  loki:
+    name: loki
+# DockerMe.ir <ahmad@DOMAIN>
