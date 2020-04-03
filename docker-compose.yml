@@ -3,6 +3,7 @@ version: '3.4'
 services:
   traefik:
     image: traefik:latest
+    container_name: traefik
     command:
       - "--api=true"
       - "--api.insecure=true"
@@ -10,6 +11,12 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=http_network"
       - "--entrypoints.http.address=:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=http_network"
+      - "traefik.http.routers.tra.entrypoints=http"
+      - "traefik.http.routers.tra.rule=Host(`web.DOMAIN`)"
+      - "traefik.http.services.tra.loadbalancer.server.port=8080"
     ports:
       - "80:80"
     volumes:
@@ -98,6 +105,20 @@ services:
       - /var/log:/var/log
       - ./promtail/docker-config.yaml:/etc/promtail/docker-config.yaml
     command: -config.file=/etc/promtail/docker-config.yaml
+    networks:
+     - services_network
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    volumes:
+    - /proc:/host/proc:ro
+    - /sys:/host/sys:ro
+    - /:/rootfs:ro
+    command:
+    - --path.procfs=/host/proc
+    - --path.sysfs=/host/sys
+    - --collector.filesystem.ignored-mount-points
+    - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
     networks:
      - services_network
 
